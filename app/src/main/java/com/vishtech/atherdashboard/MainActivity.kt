@@ -1,30 +1,21 @@
 package com.vishtech.atherdashboard
 
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -50,34 +41,113 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Dashboard() {
+    val icons = listOf(
+        R.drawable.location,
+        R.drawable.bluetooth,
+        R.drawable.subtract
+    )
+
+    val focusRequesters = List(icons.size + 2) { FocusRequester() } // Extra slots for Music and Gauge
+    var selectedIndex by remember { mutableStateOf(0) }
+
+    // Auto-focus first item on launch
+    LaunchedEffect(Unit) {
+        focusRequesters[selectedIndex].requestFocus()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(color = 0xFF13171F)) // Match the background
+            .background(Color(0xFF13171F))
+            .onKeyEvent { event ->
+                if (event.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) { // Prevents double jumps
+                    when (event.nativeKeyEvent.keyCode) {
+                        KeyEvent.KEYCODE_DPAD_DOWN -> {
+                            if (selectedIndex < focusRequesters.size - 1) {
+                                selectedIndex++
+                                focusRequesters[selectedIndex].requestFocus()
+                            }
+                            true
+                        }
+                        KeyEvent.KEYCODE_DPAD_UP -> {
+                            if (selectedIndex > 0) {
+                                selectedIndex--
+                                focusRequesters[selectedIndex].requestFocus()
+                            }
+                            true
+                        }
+                        else -> false
+                    }
+                } else {
+                    false
+                }
+            }
     ) {
-        // Top-left time
-        Text(
-            text = "12:30 PM",
-            color = Color.White,
-            fontFamily = FontFamily.Default,
+        // **Independent Music Icon (Top Center)**
+        Column(
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .align(Alignment.TopCenter)
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color(0x60FCFDFF))
                 .padding(16.dp)
-        )
-        Column(modifier = Modifier.padding(top = 40.dp, start = 16.dp)
-            .align(Alignment.TopStart)
-            .clip(shape = RoundedCornerShape(30.dp))
-            .background(color = Color(color = 0x60FCFDFF))
-            .padding(8.dp)) {
+                .focusRequester(focusRequesters[0]) // Assign D-pad focus
+                .focusable(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Icon(
                 painter = painterResource(R.drawable.music),
-                contentDescription = "Navigation",
-                tint = Color.White,
+                contentDescription = "Music",
+                tint = if (selectedIndex == 0) Color.Yellow else Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        // **D-pad Controlled Icons (Left)**
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(16.dp)
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color(0x60FCFDFF))
+                .padding(16.dp),
+            horizontalAlignment = Alignment.End
+        ) {
+            icons.forEachIndexed { index, icon ->
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = "Icon $index",
+                    tint = if (selectedIndex == index + 1) Color.Yellow else Color.White,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(8.dp)
+                        .focusRequester(focusRequesters[index + 1])
+                        .focusable()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        // **D-pad Controlled Gauge Icon (Bottom Left)**
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color(0x60FCFDFF))
+                .padding(16.dp)
+                .focusRequester(focusRequesters[focusRequesters.size - 1]) // Assign last focus slot
+                .focusable(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.gauge),
+                contentDescription = "Gauge",
+                tint = if (selectedIndex == focusRequesters.size - 1) Color.Yellow else Color.White,
                 modifier = Modifier.size(24.dp)
             )
         }
 
-        // Top-right icons
+        // **Top-right icons (Battery, Bluetooth, Network)**
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -92,22 +162,23 @@ fun Dashboard() {
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 painter = painterResource(R.drawable.network),
-                contentDescription = "Settings",
+                contentDescription = "Network",
                 tint = Color.White,
                 modifier = Modifier.size(20.dp)
             )
         }
 
-        // Center Speedometer
+        // **Speedometer (Center)**
         Column(
             modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "0", // Dynamic speed value
+                text = "0",
                 color = Color.White,
-                fontSize = 50.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 160.sp,
+                fontWeight = FontWeight.Normal,
+                fontFamily = FontFamily.SansSerif
             )
             Text(
                 text = "km/h",
@@ -116,66 +187,7 @@ fun Dashboard() {
             )
         }
 
-        // Bottom-left navigation icon and ODO
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(16.dp),
-        ) {
-            Column(modifier = Modifier.padding(16.dp)
-                .clip(shape = RoundedCornerShape(30.dp))
-                .background(color = Color(color = 0x60FCFDFF))
-                .padding(8.dp)) {
-                Icon(
-                    painter = painterResource(R.drawable.gauge),
-                    contentDescription = "Navigation",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "ODO 1249 km",
-                color = Color.White,
-                fontSize = 14.sp
-            )
-        }
-
-        // Middle Navigation
-        Column(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(16.dp)
-                .clip(shape = RoundedCornerShape(30.dp))
-                .background(color = Color(color = 0x60FCFDFF))
-                .padding(8.dp),
-
-            horizontalAlignment = Alignment.End // Align text to the right
-
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.location),
-                contentDescription = "Navigation",
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-            Icon(
-                painter = painterResource(R.drawable.bluetooth),
-                contentDescription = "Navigation",
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-            Icon(
-                painter = painterResource(R.drawable.subtract),
-                contentDescription = "Navigation",
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        // Bottom-right stats
+        // **Bottom-right stats**
         Column(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
@@ -203,22 +215,20 @@ fun Dashboard() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    Dashboard()
-}
-
 @Composable
 fun SimpleProgressBar() {
     LinearProgressIndicator(
-        progress = {
-            0.92f // 50% progress
-        },
+        progress = { 0.92f },
         modifier = Modifier
             .width(50.dp)
             .height(10.dp),
         color = Color.Green,
         trackColor = Color.Gray,
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    Dashboard()
 }
