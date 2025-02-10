@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,7 +18,6 @@ import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,14 +34,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DashboardUI() {
-    val icons = listOf(
-        R.drawable.music,
-        R.drawable.location,
-        R.drawable.bluetooth,
-        R.drawable.subtract
-    )
+    val topIcon = listOf(R.drawable.music) // Separate Music Icon
+    val middleIcons = listOf(R.drawable.bluetooth, R.drawable.location, R.drawable.subtract) // Grouped Icons
+    val bottomIcon = listOf(R.drawable.gauge) // Gauge as last item
 
-    val focusRequesters = List(icons.size) { FocusRequester() }
+    val allIcons = topIcon + listOf("group") + bottomIcon // "group" represents the middle section
+    val focusRequesters = List(allIcons.size) { FocusRequester() }
     var selectedIndex by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
@@ -56,7 +54,7 @@ fun DashboardUI() {
                 if (event.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
                     when (event.nativeKeyEvent.keyCode) {
                         KeyEvent.KEYCODE_DPAD_DOWN -> {
-                            if (selectedIndex < icons.size - 1) {
+                            if (selectedIndex < allIcons.size - 1) {
                                 selectedIndex++
                                 focusRequesters[selectedIndex].requestFocus()
                             }
@@ -86,22 +84,22 @@ fun DashboardUI() {
                 .padding(start = 16.dp, top = 16.dp)
         )
 
-        // **Side Menu with Icons & Selection Line**
+        // **Side Menu**
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = 8.dp, top = 50.dp)
+                .padding(start = 8.dp, top = 40.dp)
         ) {
-            icons.forEachIndexed { index, icon ->
+            allIcons.forEachIndexed { index, item ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // **Selection Indicator**
+                    // **Selection Line**
                     if (selectedIndex == index) {
                         Box(
                             modifier = Modifier
                                 .width(6.dp)
-                                .height(40.dp)
+                                .height(if (item == "group") 140.dp else 40.dp)
                                 .background(Color.White, shape = RoundedCornerShape(50))
                         )
                     } else {
@@ -110,40 +108,61 @@ fun DashboardUI() {
 
                     Spacer(modifier = Modifier.width(12.dp)) // Space between line and icon
 
-                    // **Icon**
-                    Icon(
-                        painter = painterResource(icon),
-                        contentDescription = "Icon $index",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .focusRequester(focusRequesters[index])
-                            .focusable()
-                    )
+                    if (item == "group") {
+                        // **Grouped Middle Icons**
+                        Column(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Color(0xFF292E3A))
+                                .padding(vertical = 8.dp, horizontal = 12.dp)
+                                .focusRequester(focusRequesters[index])
+                                .focusable()
+                        ) {
+                            middleIcons.forEach { icon ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF3A3F4B))
+                                        .padding(8.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(icon),
+                                        contentDescription = "Icon $icon",
+                                        tint = Color.White,
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .align(Alignment.Center)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(12.dp)) // Space between grouped icons
+                            }
+                        }
+                    } else {
+                        // **Other Icons**
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF292E3A))
+                                .focusRequester(focusRequesters[index])
+                                .focusable()
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    if (index == 0) R.drawable.music else R.drawable.gauge
+                                ),
+                                contentDescription = "Icon $index",
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .align(Alignment.Center)
+                            )
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(24.dp)) // Spacing between items
+                Spacer(modifier = Modifier.height(24.dp)) // Space between items
             }
-        }
-
-        // **Top-right status icons (Bluetooth, Network)**
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.bluetooth),
-                contentDescription = "Bluetooth",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                painter = painterResource(R.drawable.network),
-                contentDescription = "Network",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
         }
 
         // **Speedometer (Center)**
@@ -153,62 +172,92 @@ fun DashboardUI() {
         ) {
             Text(
                 text = "0",
+                fontSize = 100.sp,
                 color = Color.White,
-                fontSize = 160.sp,
-                fontWeight = FontWeight.Normal,
-                fontFamily = FontFamily.SansSerif
+                fontWeight = FontWeight.Bold
             )
             Text(
                 text = "km/h",
-                color = Color.White,
-                fontSize = 16.sp
+                fontSize = 20.sp,
+                color = Color.Gray
             )
         }
 
-        // **Battery & ECO Mode UI (Right)**
+        // **Battery & ECO Mode (Top-Right)**
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(end = 16.dp, top = 16.dp),
+            horizontalAlignment = Alignment.End
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(6.dp)
+                        .background(Color.Green, shape = RoundedCornerShape(50))
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    painter = painterResource(R.drawable.bluetooth),
+                    contentDescription = "Bluetooth",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    painter = painterResource(R.drawable.network),
+                    contentDescription = "Signal",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+
+        // **Range & ECO Info (Right)**
         Column(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(end = 16.dp)
+                .padding(end = 24.dp),
+            horizontalAlignment = Alignment.End
         ) {
             Text(
                 text = "99 km",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 24.sp,
+                color = Color.White
             )
-            SimpleProgressBar()
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .width(60.dp)
+                    .height(6.dp)
+                    .background(Color.Green, shape = RoundedCornerShape(50))
+            )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "92%",
-                color = Color(0xFF4CAF50),
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                color = Color.Green
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = "ECO R",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Icon(
-                painter = painterResource(R.drawable.network),
-                contentDescription = "Navigation",
-                tint = Color.White,
-                modifier = Modifier.size(72.dp)
+                text = "ECO",
+                fontSize = 24.sp,
+                color = Color.White
             )
         }
 
-        // **ODO Reading (Bottom Left)**
+        // **ODO Info (Bottom-Left)**
         Row(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(16.dp),
+                .padding(start = 16.dp, bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "ODO",
                 color = Color.Gray,
-                fontSize = 14.sp
+                fontSize = 16.sp
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -219,6 +268,8 @@ fun DashboardUI() {
         }
     }
 }
+
+
 
 @Composable
 fun SimpleProgressBar() {
