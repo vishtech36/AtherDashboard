@@ -185,7 +185,15 @@ fun DashboardUI() {
                 color = Color.Gray
             )
         }
+        Box(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .width(40.dp)
+                .height(6.dp)
+                .background(Color.Green, shape = RoundedCornerShape(50))
+                .align(Alignment.TopCenter)
 
+        )
         // **Battery & ECO Mode (Top-Right)**
         Column(
             modifier = Modifier
@@ -194,12 +202,6 @@ fun DashboardUI() {
             horizontalAlignment = Alignment.End
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .width(40.dp)
-                        .height(6.dp)
-                        .background(Color.Green, shape = RoundedCornerShape(50))
-                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     painter = painterResource(R.drawable.bluetooth),
@@ -238,10 +240,11 @@ fun DashboardUI() {
                 color = Color.Green
             )
             Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "ECO",
-                fontSize = 24.sp,
-                color = Color.White
+            Icon(
+                painter = painterResource(R.drawable.arr),
+                contentDescription = "Signal",
+                tint = Color.White,
+                modifier = Modifier.size(72.dp)
             )
         }
 
