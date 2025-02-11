@@ -1,6 +1,7 @@
 package com.vishtech.atherdashboard
 
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -102,6 +103,7 @@ fun DashboardUI() {
                 ) {
                     // **Selection Line**
                     if (selectedIndex == index) {
+                        Log.d("AA", "Selected Index: $selectedIndex");
                         Box(
                             modifier = Modifier
                                 .width(6.dp)
@@ -135,7 +137,7 @@ fun DashboardUI() {
                                     Icon(
                                         painter = painterResource(icon),
                                         contentDescription = "Icon $icon",
-                                        tint = Color.White,
+                                        tint = if(selectedIndex ==index) Color.White else Color.Gray,
                                         modifier = Modifier
                                             .size(32.dp)
                                             .align(Alignment.Center)
@@ -160,7 +162,7 @@ fun DashboardUI() {
                                     if (index == 0) R.drawable.music else R.drawable.gauge
                                 ),
                                 contentDescription = "Icon $index",
-                                tint = Color.White,
+                                tint = if(selectedIndex ==index) Color.White else Color.Gray,
                                 modifier = Modifier
                                     .padding(16.dp)
                                     .size(32.dp)
