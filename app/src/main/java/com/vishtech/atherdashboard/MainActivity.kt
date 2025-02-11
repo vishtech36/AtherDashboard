@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vishtech.atherdashboard.ui.theme.LimeColor
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -166,6 +167,25 @@ fun DashboardUI() {
                                     .align(Alignment.Center)
                             )
                         }
+                        if(index != 0) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(start = 16.dp, bottom = 16.dp, top = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "ODO",
+                                    color = Color.Gray,
+                                    fontSize = 16.sp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "1249 km",
+                                    color = Color.White,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
                     }
                 }
                 if(index != allIcons.size-1)
@@ -180,7 +200,7 @@ fun DashboardUI() {
         ) {
             Text(
                 text = "0",
-                fontSize = 100.sp,
+                fontSize = 120.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
@@ -195,7 +215,7 @@ fun DashboardUI() {
                 .padding(top = 16.dp)
                 .width(40.dp)
                 .height(6.dp)
-                .background(Color.Green, shape = RoundedCornerShape(50))
+                .background(LimeColor, shape = RoundedCornerShape(50))
                 .align(Alignment.TopCenter)
 
         )
@@ -212,14 +232,14 @@ fun DashboardUI() {
                     painter = painterResource(R.drawable.bluetooth),
                     contentDescription = "Bluetooth",
                     tint = Color.White,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     painter = painterResource(R.drawable.network),
                     contentDescription = "Signal",
                     tint = Color.White,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -231,18 +251,28 @@ fun DashboardUI() {
                 .padding(end = 24.dp),
             horizontalAlignment = Alignment.End
         ) {
-            Text(
-                text = "99 km",
-                fontSize = 24.sp,
-                color = Color.White
-            )
+            Row {
+                Text(
+                    text = "99",
+                    fontSize = 48.sp,
+                    color = Color.White
+                )
+                Text(
+                    text = "km",
+                    fontSize = 24.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.Bottom)
+                )
+            }
+
             Spacer(modifier = Modifier.height(4.dp))
             DistanceProgressBar()
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "92%",
                 fontSize = 16.sp,
-                color = Color.Green
+                color = LimeColor,
+                modifier = Modifier.align(Alignment.Start).width(90.dp)
             )
             Spacer(modifier = Modifier.height(20.dp))
             Icon(
@@ -254,24 +284,7 @@ fun DashboardUI() {
         }
 
         // **ODO Info (Bottom-Left)**
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "ODO",
-                color = Color.Gray,
-                fontSize = 16.sp
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "1249 km",
-                color = Color.White,
-                fontSize = 16.sp
-            )
-        }
+
     }
 }
 
@@ -282,9 +295,9 @@ fun DistanceProgressBar() {
     LinearProgressIndicator(
         progress = { 0.92f },
         modifier = Modifier
-            .width(50.dp)
+            .width(90.dp)
             .height(10.dp),
-        color = Color.Green,
+        color = LimeColor,
         trackColor = Color.Gray,
     )
 }
