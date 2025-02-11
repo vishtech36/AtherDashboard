@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -60,6 +61,7 @@ fun DashboardUI() {
                             }
                             true
                         }
+
                         KeyEvent.KEYCODE_DPAD_UP -> {
                             if (selectedIndex > 0) {
                                 selectedIndex--
@@ -67,6 +69,7 @@ fun DashboardUI() {
                             }
                             true
                         }
+
                         else -> false
                     }
                 } else {
@@ -227,12 +230,7 @@ fun DashboardUI() {
                 color = Color.White
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Box(
-                modifier = Modifier
-                    .width(60.dp)
-                    .height(6.dp)
-                    .background(Color.Green, shape = RoundedCornerShape(50))
-            )
+            DistanceProgressBar()
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "92%",
@@ -272,7 +270,7 @@ fun DashboardUI() {
 
 
 @Composable
-fun SimpleProgressBar() {
+fun DistanceProgressBar() {
     LinearProgressIndicator(
         progress = { 0.92f },
         modifier = Modifier
@@ -281,4 +279,10 @@ fun SimpleProgressBar() {
         color = Color.Green,
         trackColor = Color.Gray,
     )
+}
+
+@Preview
+@Composable
+private fun PreviewDashboard() {
+    DashboardUI()
 }
