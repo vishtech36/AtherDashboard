@@ -46,7 +46,7 @@ fun DashboardUI() {
     var selectedIndex by remember { mutableStateOf(0) }
     var navPanelSelected by remember { mutableStateOf(true) }
     var navMenuVisible by remember { mutableStateOf(false) }
-    var selectedNavIndex by remember { mutableStateOf(0) }
+    var selectedNavIndex by remember { mutableStateOf(-1) }
     var showSelectedPage by remember { mutableStateOf(false) }
 
     val navMenuItems = listOf("Navigation", "Trip Info", "Settings", "Battery Info")
@@ -96,6 +96,7 @@ fun DashboardUI() {
                             if (navMenuVisible) {
                                 navMenuVisible = false
                                 showSelectedPage = false
+                                selectedNavIndex = -1
                             }
                             true
                         }
@@ -164,18 +165,19 @@ fun DashboardUI() {
                                     .focusRequester(focusRequesters[index])
                                     .focusable()
                             ) {
-                                middleIcons.forEach { icon ->
+                                middleIcons.forEachIndexed {i,  icon ->
                                     Box(
                                         modifier = Modifier
                                             .size(50.dp)
                                             .clip(CircleShape)
-                                            .background(Color(0x003A3F4B))
+                                            .background(if(selectedNavIndex == i) Color.White else Color(0x003A3F4B))
                                             .padding(8.dp)
                                     ) {
                                         Icon(
                                             painter = painterResource(icon),
                                             contentDescription = "Icon $icon",
-                                            tint = if(selectedIndex ==index) Color.White else Color.Gray,
+                                            tint = if(selectedNavIndex == i) Color.Gray else
+                                            if(selectedIndex ==index) Color.White else Color.Gray,
                                             modifier = Modifier
                                                 .size(32.dp)
                                                 .align(Alignment.Center)
