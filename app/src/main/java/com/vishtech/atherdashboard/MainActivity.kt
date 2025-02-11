@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DashboardUI() {
     val topIcon = listOf(R.drawable.music) // Separate Music Icon
-    val middleIcons = listOf(R.drawable.bluetooth, R.drawable.location, R.drawable.subtract) // Grouped Icons
+    val middleIcons = listOf(R.drawable.location, R.drawable.bluetooth, R.drawable.subtract) // Grouped Icons
     val bottomIcon = listOf(R.drawable.gauge) // Gauge as last item
 
     val allIcons = topIcon + listOf("group") + bottomIcon // "group" represents the middle section
@@ -115,7 +115,7 @@ fun DashboardUI() {
                         // **Grouped Middle Icons**
                         Column(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
+                                .clip(RoundedCornerShape(50.dp))
                                 .background(Color(0xFF292E3A))
                                 .padding(vertical = 8.dp, horizontal = 12.dp)
                                 .focusRequester(focusRequesters[index])
@@ -145,7 +145,8 @@ fun DashboardUI() {
                         // **Other Icons**
                         Box(
                             modifier = Modifier
-                                .size(50.dp)
+                                .padding(start = 8.dp)
+                                .size(60.dp)
                                 .clip(CircleShape)
                                 .background(Color(0xFF292E3A))
                                 .focusRequester(focusRequesters[index])
@@ -158,6 +159,7 @@ fun DashboardUI() {
                                 contentDescription = "Icon $index",
                                 tint = Color.White,
                                 modifier = Modifier
+                                    .padding(16.dp)
                                     .size(32.dp)
                                     .align(Alignment.Center)
                             )
