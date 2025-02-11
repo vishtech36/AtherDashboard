@@ -44,6 +44,13 @@ fun DashboardUI() {
     val allIcons = topIcon + listOf("group") + bottomIcon // "group" represents the middle section
     val focusRequesters = List(allIcons.size) { FocusRequester() }
     var selectedIndex by remember { mutableStateOf(0) }
+    var navPanelSelected by remember { mutableStateOf(true) }
+    var navMenuVisible by remember { mutableStateOf(false) }
+    var selectedNavIndex by remember { mutableStateOf(0) }
+    var showSelectedPage by remember { mutableStateOf(false) }
+
+    val navMenuItems = listOf("Navigation", "Trip Info", "Settings", "Battery Info")
+
 
     LaunchedEffect(Unit) {
         focusRequesters[selectedIndex].requestFocus()
@@ -58,17 +65,48 @@ fun DashboardUI() {
                 if (event.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
                     when (event.nativeKeyEvent.keyCode) {
                         KeyEvent.KEYCODE_DPAD_DOWN -> {
-                            if (selectedIndex < allIcons.size - 1) {
-                                selectedIndex++
-                                focusRequesters[selectedIndex].requestFocus()
+                            if (navMenuVisible) {
+                                if (selectedNavIndex < navMenuItems.size - 1) {
+                                    selectedNavIndex++
+                                }
+                            } else {
+                                if (selectedIndex < allIcons.size - 1) {
+                                    selectedIndex++
+                                    focusRequesters[selectedIndex].requestFocus()
+                                }
                             }
                             true
                         }
 
                         KeyEvent.KEYCODE_DPAD_UP -> {
-                            if (selectedIndex > 0) {
-                                selectedIndex--
-                                focusRequesters[selectedIndex].requestFocus()
+                            if (navMenuVisible) {
+                                if (selectedNavIndex > 0) {
+                                    selectedNavIndex--
+                                }
+                            } else {
+                                if (selectedIndex > 0) {
+                                    selectedIndex--
+                                    focusRequesters[selectedIndex].requestFocus()
+                                }
+                            }
+                            true
+                        }
+
+                        KeyEvent.KEYCODE_DPAD_LEFT -> {
+                            if (navMenuVisible) {
+                                navMenuVisible = false
+                                showSelectedPage = false
+                            }
+                            true
+                        }
+
+
+                        KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                            if (!navMenuVisible && allIcons[selectedIndex] == "group") {
+                                navMenuVisible = true
+                                selectedNavIndex = 0 // Highlight first navigation icon
+                            } else if (navMenuVisible) {
+                                showSelectedPage = true // Open the selected page
                             }
                             true
                         }
@@ -91,109 +129,152 @@ fun DashboardUI() {
         )
 
         // **Side Menu**
-        Column(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(start = 8.dp, top = 40.dp),
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            allIcons.forEachIndexed { index, item ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // **Selection Line**
-                    if (selectedIndex == index) {
-                        Log.d("AA", "Selected Index: $selectedIndex");
-                        Box(
-                            modifier = Modifier
-                                .width(6.dp)
-                                .height(if (item == "group") 140.dp else 40.dp)
-                                .background(Color.White, shape = RoundedCornerShape(50))
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.width(6.dp))
-                    }
+        Row(modifier = Modifier
+            .align(Alignment.CenterStart)
+            .padding(start = 8.dp, top = 40.dp)){
+            Column(
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                allIcons.forEachIndexed { index, item ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // **Selection Line**
+                        if (selectedIndex == index) {
+                            Log.d("AA", "Selected Index: $selectedIndex");
+                            Box(
+                                modifier = Modifier
+                                    .width(6.dp)
+                                    .height(if (item == "group") 140.dp else 40.dp)
+                                    .background(Color.White, shape = RoundedCornerShape(50))
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
 
-                    Spacer(modifier = Modifier.width(12.dp)) // Space between line and icon
+                        Spacer(modifier = Modifier.width(12.dp)) // Space between line and icon
 
-                    if (item == "group") {
-                        // **Grouped Middle Icons**
-                        Column(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50.dp))
-                                .background(Color(0xFF292E3A))
-                                .padding(vertical = 8.dp, horizontal = 12.dp)
-                                .focusRequester(focusRequesters[index])
-                                .focusable()
-                        ) {
-                            middleIcons.forEach { icon ->
-                                Box(
-                                    modifier = Modifier
-                                        .size(50.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0x003A3F4B))
-                                        .padding(8.dp)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(icon),
-                                        contentDescription = "Icon $icon",
-                                        tint = if(selectedIndex ==index) Color.White else Color.Gray,
+                        if (item == "group") {
+                            // **Grouped Middle Icons**
+                            Column(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(50.dp))
+                                    .background(Color(0xFF292E3A))
+                                    .padding(vertical = 8.dp, horizontal = 12.dp)
+                                    .focusRequester(focusRequesters[index])
+                                    .focusable()
+                            ) {
+                                middleIcons.forEach { icon ->
+                                    Box(
                                         modifier = Modifier
-                                            .size(32.dp)
-                                            .align(Alignment.Center)
+                                            .size(50.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0x003A3F4B))
+                                            .padding(8.dp)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(icon),
+                                            contentDescription = "Icon $icon",
+                                            tint = if(selectedIndex ==index) Color.White else Color.Gray,
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .align(Alignment.Center)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(12.dp)) // Space between grouped icons
+                                }
+                            }
+                        } else {
+                            // **Other Icons**
+                            Box(
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .size(60.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF292E3A))
+                                    .focusRequester(focusRequesters[index])
+                                    .focusable()
+                            ) {
+                                Icon(
+                                    painter = painterResource(
+                                        if (index == 0) R.drawable.music else R.drawable.gauge
+                                    ),
+                                    contentDescription = "Icon $index",
+                                    tint = if(selectedIndex ==index) Color.White else Color.Gray,
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .size(32.dp)
+                                        .align(Alignment.Center)
+                                )
+                            }
+                            if(index != 0) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(start = 16.dp, bottom = 16.dp, top = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "ODO",
+                                        color = Color.Gray,
+                                        fontSize = 16.sp
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "1249 km",
+                                        color = Color.White,
+                                        fontSize = 16.sp
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(12.dp)) // Space between grouped icons
-                            }
-                        }
-                    } else {
-                        // **Other Icons**
-                        Box(
-                            modifier = Modifier
-                                .padding(start = 8.dp)
-                                .size(60.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF292E3A))
-                                .focusRequester(focusRequesters[index])
-                                .focusable()
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    if (index == 0) R.drawable.music else R.drawable.gauge
-                                ),
-                                contentDescription = "Icon $index",
-                                tint = if(selectedIndex ==index) Color.White else Color.Gray,
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(32.dp)
-                                    .align(Alignment.Center)
-                            )
-                        }
-                        if(index != 0) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(start = 16.dp, bottom = 16.dp, top = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "ODO",
-                                    color = Color.Gray,
-                                    fontSize = 16.sp
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "1249 km",
-                                    color = Color.White,
-                                    fontSize = 16.sp
-                                )
                             }
                         }
                     }
+                    if(index != allIcons.size-1)
+                        Spacer(modifier = Modifier.height(24.dp).weight(1f)) // Space between items
                 }
-                if(index != allIcons.size-1)
-                Spacer(modifier = Modifier.height(24.dp).weight(1f)) // Space between items
+            }
+            // **ODO Info (Bottom-Left)**
+            // **Navigation Panel on Right**
+            if (navMenuVisible) {
+                Column(
+                    modifier = Modifier
+                        .padding(start = 20.dp, top = 40.dp)
+                        .background(Color(0xFF292E3A), shape = RoundedCornerShape(12.dp))
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    navMenuItems.forEachIndexed { index, item ->
+                        Text(
+                            text = item,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (index == selectedNavIndex) Color.White else Color.Gray,
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .focusable()
+                        )
+                    }
+                }
             }
         }
+
+        // **Selected Page Content**
+        if (showSelectedPage) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "You selected: ${navMenuItems[selectedNavIndex]}",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        }
+
 
         // **Speedometer (Center)**
         Column(
@@ -284,9 +365,6 @@ fun DashboardUI() {
                 modifier = Modifier.size(72.dp)
             )
         }
-
-        // **ODO Info (Bottom-Left)**
-
     }
 }
 
