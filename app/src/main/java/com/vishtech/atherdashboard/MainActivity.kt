@@ -51,6 +51,7 @@ fun DashboardUI() {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF13171F))
+            .padding(top = 8.dp, bottom = 8.dp)
             .onKeyEvent { event ->
                 if (event.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
                     when (event.nativeKeyEvent.keyCode) {
@@ -91,7 +92,8 @@ fun DashboardUI() {
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = 8.dp, top = 40.dp)
+                .padding(start = 8.dp, top = 40.dp),
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
             allIcons.forEachIndexed { index, item ->
                 Row(
@@ -126,7 +128,7 @@ fun DashboardUI() {
                                     modifier = Modifier
                                         .size(50.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFF3A3F4B))
+                                        .background(Color(0x003A3F4B))
                                         .padding(8.dp)
                                 ) {
                                     Icon(
@@ -166,7 +168,8 @@ fun DashboardUI() {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp)) // Space between items
+                if(index != allIcons.size-1)
+                Spacer(modifier = Modifier.height(24.dp).weight(1f)) // Space between items
             }
         }
 
