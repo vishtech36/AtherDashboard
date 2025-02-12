@@ -6,24 +6,54 @@ import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.*
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.*
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
+import com.vishtech.atherdashboard.data.Direction
 import com.vishtech.atherdashboard.ui.theme.LimeColor
+import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,21 +65,24 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DashboardUI() {
     val topIcon = listOf(R.drawable.music) // Separate Music Icon
-    val middleIcons = listOf(R.drawable.location, R.drawable.bluetooth, R.drawable.subtract) // Grouped Icons
+    val middleIcons =
+        listOf(R.drawable.location, R.drawable.bluetooth, R.drawable.subtract) // Grouped Icons
     val bottomIcon = listOf(R.drawable.gauge) // Gauge as last item
 
     val allIcons = topIcon + listOf("group") + bottomIcon // "group" represents the middle section
     val focusRequesters = List(allIcons.size) { FocusRequester() }
-    var selectedIndex by remember { mutableStateOf(0) }
-    var navPanelSelected by remember { mutableStateOf(true) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
     var navMenuVisible by remember { mutableStateOf(false) }
-    var selectedNavIndex by remember { mutableStateOf(-1) }
+    var selectedNavIndex by remember { mutableIntStateOf(-1) }
     var showSelectedPage by remember { mutableStateOf(false) }
-
-    val navMenuItems = listOf("Navigation", "Trip Info", "Settings", "Battery Info")
+    val pagerState = rememberPagerState(pageCount = { 10 })
+    var direction by remember { mutableStateOf(Direction.NONE) }
+    var currentPage by remember { mutableIntStateOf(0) }
+    val navMenuItems = 3
 
 
     LaunchedEffect(Unit) {
@@ -66,9 +99,11 @@ fun DashboardUI() {
                     when (event.nativeKeyEvent.keyCode) {
                         KeyEvent.KEYCODE_DPAD_DOWN -> {
                             if (navMenuVisible) {
-                                if (selectedNavIndex < navMenuItems.size - 1) {
+                                if (selectedNavIndex < navMenuItems - 1) {
                                     selectedNavIndex++
                                 }
+                                direction = Direction.DOWN
+                                currentPage = (currentPage + 1) % 3
                             } else {
                                 if (selectedIndex < allIcons.size - 1) {
                                     selectedIndex++
@@ -83,6 +118,8 @@ fun DashboardUI() {
                                 if (selectedNavIndex > 0) {
                                     selectedNavIndex--
                                 }
+                                direction = Direction.UP
+                                currentPage = (currentPage - 1) % 3
                             } else {
                                 if (selectedIndex > 0) {
                                     selectedIndex--
@@ -128,11 +165,28 @@ fun DashboardUI() {
                 .align(Alignment.TopStart)
                 .padding(start = 16.dp, top = 16.dp)
         )
+        val coroutineScope = rememberCoroutineScope()
+        LaunchedEffect(currentPage) {
+            coroutineScope.launch {
+                if(direction == Direction.UP) {
+                    pagerState.animateScrollToPage(
+                        (currentPage).coerceAtLeast(0) // Prevents going below 0
+                    )
+                }
 
+                if(direction == Direction.DOWN) {
+                    pagerState.animateScrollToPage(
+                        (currentPage).coerceAtLeast(0) // Prevents going below 0
+                    )
+                }
+            }
+        }
         // **Side Menu**
-        Row(modifier = Modifier
-            .align(Alignment.CenterStart)
-            .padding(start = 8.dp, top = 40.dp)){
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 8.dp, top = 40.dp)
+        ) {
             Column(
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
@@ -165,19 +219,23 @@ fun DashboardUI() {
                                     .focusRequester(focusRequesters[index])
                                     .focusable()
                             ) {
-                                middleIcons.forEachIndexed {i,  icon ->
+                                middleIcons.forEachIndexed { i, icon ->
                                     Box(
                                         modifier = Modifier
                                             .size(50.dp)
                                             .clip(CircleShape)
-                                            .background(if(selectedNavIndex == i) Color.White else Color(0x003A3F4B))
+                                            .background(
+                                                if (selectedNavIndex == i) Color.White else Color(
+                                                    0x003A3F4B
+                                                )
+                                            )
                                             .padding(8.dp)
                                     ) {
                                         Icon(
                                             painter = painterResource(icon),
                                             contentDescription = "Icon $icon",
-                                            tint = if(selectedNavIndex == i) Color.Gray else
-                                            if(selectedIndex ==index) Color.White else Color.Gray,
+                                            tint = if (selectedNavIndex == i) Color.Gray else
+                                                if (selectedIndex == index) Color.White else Color.Gray,
                                             modifier = Modifier
                                                 .size(32.dp)
                                                 .align(Alignment.Center)
@@ -202,14 +260,14 @@ fun DashboardUI() {
                                         if (index == 0) R.drawable.music else R.drawable.gauge
                                     ),
                                     contentDescription = "Icon $index",
-                                    tint = if(selectedIndex ==index) Color.White else Color.Gray,
+                                    tint = if (selectedIndex == index) Color.White else Color.Gray,
                                     modifier = Modifier
                                         .padding(16.dp)
                                         .size(32.dp)
                                         .align(Alignment.Center)
                                 )
                             }
-                            if(index != 0) {
+                            if (index != 0) {
                                 Row(
                                     modifier = Modifier
                                         .padding(start = 16.dp, bottom = 16.dp, top = 8.dp),
@@ -230,12 +288,17 @@ fun DashboardUI() {
                             }
                         }
                     }
-                    if(index != allIcons.size-1)
-                        Spacer(modifier = Modifier.height(24.dp).weight(1f)) // Space between items
+                    if (index != allIcons.size - 1)
+                        Spacer(
+                            modifier = Modifier
+                                .height(24.dp)
+                                .weight(1f)
+                        ) // Space between items
                 }
             }
             // **ODO Info (Bottom-Left)**
             // **Navigation Panel on Right**
+
             if (navMenuVisible) {
                 Column(
                     modifier = Modifier
@@ -244,16 +307,66 @@ fun DashboardUI() {
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    navMenuItems.forEachIndexed { index, item ->
-                        Text(
-                            text = item,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (index == selectedNavIndex) Color.White else Color.Gray,
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .focusable()
-                        )
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp)
+                    ) {
+                        val coroutineScope = rememberCoroutineScope()
+
+                        Column(Modifier.align(Alignment.Center)) {  // Added a Column to arrange buttons and pager
+
+                            VerticalPager(
+                                state = pagerState,
+                                modifier = Modifier.weight(1f)
+                            ) { page -> // Weight for pager
+                                Text(
+                                    text = "Page: $page",
+                                    modifier = Modifier
+                                        .fillMaxSize() // Fill the pager's area
+                                        .background(if (page % 2 == 0) Color.Gray else Color.Green)
+                                        .graphicsLayer {
+                                            val pageOffset = (
+                                                    (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                                                    ).absoluteValue
+
+                                            alpha = lerp(
+                                                start = 0.5f,
+                                                stop = 1f,
+                                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                                            )
+                                        }
+                                )
+                            }
+
+                            Row( // Added a Row for the buttons
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                Button(onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(
+                                            (pagerState.currentPage - 1).coerceAtLeast(0) // Prevents going below 0
+                                        )
+                                    }
+                                }) {
+                                    Text("Previous")
+                                }
+
+                                Button(onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(
+                                            (pagerState.currentPage + 1).coerceAtMost(pagerState.pageCount - 1) // Prevents going beyond last page
+                                        )
+                                    }
+                                }) {
+                                    Text("Next")
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -269,7 +382,7 @@ fun DashboardUI() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "You selected: ${navMenuItems[selectedNavIndex]}",
+                    text = "You selected: ${navMenuItems}",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -357,7 +470,9 @@ fun DashboardUI() {
                 text = "92%",
                 fontSize = 16.sp,
                 color = LimeColor,
-                modifier = Modifier.align(Alignment.Start).width(90.dp)
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .width(90.dp)
             )
             Spacer(modifier = Modifier.height(20.dp))
             Icon(
@@ -369,7 +484,6 @@ fun DashboardUI() {
         }
     }
 }
-
 
 
 @Composable
