@@ -30,6 +30,7 @@ import com.vishtech.atherdashboard.ui.components.RangeEcoInfo
 import com.vishtech.atherdashboard.ui.components.SideMenu
 import com.vishtech.atherdashboard.ui.components.Speedometer
 import com.vishtech.atherdashboard.ui.components.TimeDisplay
+import com.vishtech.atherdashboard.ui.theme.backgroundColor
 import kotlinx.coroutines.launch
 
 
@@ -60,7 +61,7 @@ fun DashboardUI() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF13171F))
+            .background(backgroundColor)
             .padding(top = 8.dp, bottom = 8.dp)
             .onKeyEvent { event ->
                 if (event.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {

@@ -81,17 +81,21 @@ fun NavPager(pagerState: PagerState) {
                     ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .width(300.dp)
-                        .fillMaxHeight()
-                        .padding(0.dp)
-                ) {
-                    Text(
-                        text = "Page: $page",
+                if(page == 1) {
+                    BluetoothPairingCard()
+                } else {
+                    Box(
                         modifier = Modifier
-                            .background(if (page % 2 == 0) Color.Gray else Color.Green)
-                    )
+                            .width(200.dp)
+                            .fillMaxHeight()
+                            .padding(0.dp)
+                    ) {
+                        Text(
+                            text = "Page: $page",
+                            modifier = Modifier
+                                .background(if (page % 2 == 0) Color.Gray else Color.Green)
+                        )
+                    }
                 }
             }
         }
