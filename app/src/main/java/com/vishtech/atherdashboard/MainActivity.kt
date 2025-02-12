@@ -6,6 +6,11 @@ import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
@@ -14,17 +19,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
@@ -47,20 +55,21 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
 import com.vishtech.atherdashboard.data.Direction
 import com.vishtech.atherdashboard.ui.theme.LimeColor
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             DashboardUI()
+            //NavPager()
         }
     }
 }
@@ -79,7 +88,7 @@ fun DashboardUI() {
     var navMenuVisible by remember { mutableStateOf(false) }
     var selectedNavIndex by remember { mutableIntStateOf(-1) }
     var showSelectedPage by remember { mutableStateOf(false) }
-    val pagerState = rememberPagerState(pageCount = { 10 })
+    val pagerState = rememberPagerState(pageCount = { 3 })
     var direction by remember { mutableStateOf(Direction.NONE) }
     var currentPage by remember { mutableIntStateOf(0) }
     val navMenuItems = 3
@@ -103,7 +112,8 @@ fun DashboardUI() {
                                     selectedNavIndex++
                                 }
                                 direction = Direction.DOWN
-                                currentPage = (currentPage + 1) % 3
+                                if (currentPage <= 3)
+                                    currentPage += 1
                             } else {
                                 if (selectedIndex < allIcons.size - 1) {
                                     selectedIndex++
@@ -119,7 +129,8 @@ fun DashboardUI() {
                                     selectedNavIndex--
                                 }
                                 direction = Direction.UP
-                                currentPage = (currentPage - 1) % 3
+                                if (currentPage >= 0)
+                                    currentPage -= 1
                             } else {
                                 if (selectedIndex > 0) {
                                     selectedIndex--
@@ -168,17 +179,9 @@ fun DashboardUI() {
         val coroutineScope = rememberCoroutineScope()
         LaunchedEffect(currentPage) {
             coroutineScope.launch {
-                if(direction == Direction.UP) {
-                    pagerState.animateScrollToPage(
-                        (currentPage).coerceAtLeast(0) // Prevents going below 0
-                    )
-                }
-
-                if(direction == Direction.DOWN) {
-                    pagerState.animateScrollToPage(
-                        (currentPage).coerceAtLeast(0) // Prevents going below 0
-                    )
-                }
+                pagerState.animateScrollToPage(
+                    (currentPage).coerceAtLeast(0) // Prevents going below 0
+                )
             }
         }
         // **Side Menu**
@@ -299,77 +302,6 @@ fun DashboardUI() {
             // **ODO Info (Bottom-Left)**
             // **Navigation Panel on Right**
 
-            if (navMenuVisible) {
-                Column(
-                    modifier = Modifier
-                        .padding(start = 20.dp, top = 40.dp)
-                        .background(Color(0xFF292E3A), shape = RoundedCornerShape(12.dp))
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(24.dp)
-                    ) {
-                        val coroutineScope = rememberCoroutineScope()
-
-                        Column(Modifier.align(Alignment.Center)) {  // Added a Column to arrange buttons and pager
-
-                            VerticalPager(
-                                state = pagerState,
-                                modifier = Modifier.weight(1f)
-                            ) { page -> // Weight for pager
-                                Text(
-                                    text = "Page: $page",
-                                    modifier = Modifier
-                                        .fillMaxSize() // Fill the pager's area
-                                        .background(if (page % 2 == 0) Color.Gray else Color.Green)
-                                        .graphicsLayer {
-                                            val pageOffset = (
-                                                    (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                                                    ).absoluteValue
-
-                                            alpha = lerp(
-                                                start = 0.5f,
-                                                stop = 1f,
-                                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                                            )
-                                        }
-                                )
-                            }
-
-                            Row( // Added a Row for the buttons
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp),
-                                horizontalArrangement = Arrangement.SpaceAround
-                            ) {
-                                Button(onClick = {
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(
-                                            (pagerState.currentPage - 1).coerceAtLeast(0) // Prevents going below 0
-                                        )
-                                    }
-                                }) {
-                                    Text("Previous")
-                                }
-
-                                Button(onClick = {
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(
-                                            (pagerState.currentPage + 1).coerceAtMost(pagerState.pageCount - 1) // Prevents going beyond last page
-                                        )
-                                    }
-                                }) {
-                                    Text("Next")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         // **Selected Page Content**
@@ -482,6 +414,79 @@ fun DashboardUI() {
                 modifier = Modifier.size(72.dp)
             )
         }
+
+    }
+    if (navMenuVisible) {
+        NavPager(pagerState)
+    }
+}
+
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun NavPager(pagerState: PagerState) {
+    val flingBehavior = PagerDefaults.flingBehavior(
+        state = pagerState,
+        pagerSnapDistance = PagerSnapDistance.atMost(1),
+        lowVelocityAnimationSpec = tween(
+            easing = FastOutLinearInEasing,
+            durationMillis = 5000
+        ),
+        highVelocityAnimationSpec = rememberSplineBasedDecay(),
+        snapAnimationSpec = tween(
+            easing = FastOutSlowInEasing,
+            durationMillis = 1000
+        ),
+    )
+
+    Column {
+        VerticalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f),
+            pageSize = object : PageSize {
+                override fun Density.calculateMainAxisPageSize(
+                    availableSpace: Int,
+                    pageSpacing: Int
+                ): Int {
+                    return ((availableSpace - 2 * pageSpacing) * 0.7f).toInt() // Reduced size for adjacent items to be visible
+                }
+            },
+            beyondBoundsPageCount = 3,
+            flingBehavior = flingBehavior,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) { page ->
+            val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+            val scale = animateFloatAsState(
+                targetValue = 1f - (0.4f * kotlin.math.abs(pageOffset)), // Scale effect
+                animationSpec = tween(durationMillis = 100)
+            ).value
+
+            Column(
+                modifier = Modifier
+                    .padding(start = 120.dp, top = 8.dp, bottom = 8.dp)
+                    .background(Color(0xFF292E3A), shape = RoundedCornerShape(12.dp))
+                    .padding(12.dp)
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        alpha = 1f - (0.3f * kotlin.math.abs(pageOffset)) // Optional fade effect
+                    ),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(300.dp)
+                        .fillMaxHeight()
+                        .padding(0.dp)
+                ) {
+                    Text(
+                        text = "Page: $page",
+                        modifier = Modifier
+                            .background(if (page % 2 == 0) Color.Gray else Color.Green)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -498,7 +503,10 @@ fun DistanceProgressBar() {
     )
 }
 
-@Preview
+@Preview(
+    showSystemUi = true,
+    device = "spec:width=411dp,height=891dp,dpi=420,isRound=false,chinSize=0dp,orientation=landscape"
+)
 @Composable
 private fun PreviewDashboard() {
     DashboardUI()
