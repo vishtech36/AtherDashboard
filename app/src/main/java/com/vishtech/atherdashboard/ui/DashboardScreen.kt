@@ -50,6 +50,7 @@ fun DashboardUI() {
     var direction by remember { mutableStateOf(Direction.NONE) }
     var currentPage by remember { mutableIntStateOf(0) }
     val coroutineScope = rememberCoroutineScope()
+    var isAnimating by remember { mutableStateOf(false) }
     val navMenuItems = 3
 
     LaunchedEffect(Unit) {
@@ -138,13 +139,17 @@ fun DashboardUI() {
 
         // **Side Menu**
         SideMenu(
+            isAnimating = isAnimating,
             icons = allIcons,
             middleIcons = middleIcons,
             selectedIndex = selectedIndex,
+            navMenuVisible = navMenuVisible,
             modifier = Modifier,
             selectedNavIndex = selectedNavIndex,
             focusRequesters = focusRequesters
-        )
+        ) {
+            isAnimating = it
+        }
 
         // **Speedometer (Center)**
             Speedometer()

@@ -1,6 +1,9 @@
 package com.vishtech.atherdashboard.ui.components
 
 import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,6 +22,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,16 +35,23 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vishtech.atherdashboard.R
+import kotlinx.coroutines.launch
 
 @Composable
 fun SideMenu(
+    isAnimating: Boolean,
     icons: List<Any>,
     middleIcons: List<Int>,
     selectedIndex: Int,
     selectedNavIndex: Int,
+    navMenuVisible: Boolean,
     focusRequesters: List<FocusRequester>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAnimationChanged: (Boolean) -> Unit
 ) {
+    val arrow2Offset = remember { Animatable(0f) }
+    val arrow3Offset = remember { Animatable(0f) }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -72,8 +86,64 @@ fun SideMenu(
 
                         if (item == "group") {
                             // **Grouped Middle Icons**
+                            if (!navMenuVisible && selectedIndex == 1)
+                                onAnimationChanged(true)
+                            else {
+                                onAnimationChanged(false)
+                            }
+                            if (isAnimating) {
+                                val scope = rememberCoroutineScope()
+
+                                // Create Animatable offsets for movement
+
+                                // Start animation if isAnimating = true
+                                LaunchedEffect(isAnimating) {
+                                    if (isAnimating) {
+                                        scope.launch {
+                                            while (true) {
+                                                arrow2Offset.animateTo(
+                                                    1f,
+                                                    animationSpec = tween(
+                                                        500,
+                                                        easing = LinearEasing
+                                                    )
+                                                )
+                                                arrow2Offset.animateTo(
+                                                    0f,
+                                                    animationSpec = tween(
+                                                        500,
+                                                        easing = LinearEasing
+                                                    )
+                                                )
+                                            }
+                                        }
+                                        scope.launch {
+                                            while (true) {
+                                                arrow3Offset.animateTo(
+                                                    3f,
+                                                    animationSpec = tween(
+                                                        500,
+                                                        easing = LinearEasing
+                                                    )
+                                                )
+                                                arrow3Offset.animateTo(
+                                                    0f,
+                                                    animationSpec = tween(
+                                                        500,
+                                                        easing = LinearEasing
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        arrow2Offset.snapTo(0f)
+                                        arrow3Offset.snapTo(0f)
+                                    }
+                                }
+                            }
                             Column(
                                 modifier = Modifier
+                                    .offset(x = arrow3Offset.value.dp)
                                     .clip(RoundedCornerShape(50.dp))
                                     .background(Color(0xFF292E3A))
                                     .padding(vertical = 8.dp, horizontal = 12.dp)
@@ -105,6 +175,9 @@ fun SideMenu(
                                     Spacer(modifier = Modifier.height(12.dp)) // Space between grouped icons
                                 }
                             }
+                            if(!navMenuVisible && selectedIndex == 1)
+                                Arrow(isAnimating, arrow2Offset.value, arrow3Offset.value)
+
                         } else {
                             // **Other Icons**
                             Box(
