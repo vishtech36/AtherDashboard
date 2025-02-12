@@ -1,5 +1,6 @@
 package com.vishtech.atherdashboard.ui
 
+import android.util.Log
 import android.view.KeyEvent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -17,7 +18,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,7 +49,6 @@ fun DashboardUI() {
     var showSelectedPage by remember { mutableStateOf(false) }
     val pagerState = rememberPagerState(pageCount = { 3 })
     var direction by remember { mutableStateOf(Direction.NONE) }
-    var currentPage by remember { mutableIntStateOf(0) }
     val coroutineScope = rememberCoroutineScope()
     var isAnimating by remember { mutableStateOf(false) }
     val navMenuItems = 3
@@ -57,7 +56,7 @@ fun DashboardUI() {
     LaunchedEffect(Unit) {
         focusRequesters[selectedIndex].requestFocus()
     }
-
+    Log.d("TAG", "DashboardUI: -> $selectedNavIndex")
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -72,8 +71,6 @@ fun DashboardUI() {
                                     selectedNavIndex++
                                 }
                                 direction = Direction.DOWN
-                                if (currentPage <= 3)
-                                    currentPage += 1
                             } else {
                                 if (selectedIndex < allIcons.size - 1) {
                                     selectedIndex++
@@ -89,8 +86,6 @@ fun DashboardUI() {
                                     selectedNavIndex--
                                 }
                                 direction = Direction.UP
-                                if (currentPage >= 0)
-                                    currentPage -= 1
                             } else {
                                 if (selectedIndex > 0) {
                                     selectedIndex--
@@ -127,10 +122,10 @@ fun DashboardUI() {
                 }
             }
     ) {
-        LaunchedEffect(currentPage) {
+        LaunchedEffect(selectedNavIndex) {
             coroutineScope.launch {
                 pagerState.animateScrollToPage(
-                    (currentPage).coerceAtLeast(0) // Prevents going below 0
+                    (selectedNavIndex).coerceAtLeast(0) // Prevents going below 0
                 )
             }
         }
