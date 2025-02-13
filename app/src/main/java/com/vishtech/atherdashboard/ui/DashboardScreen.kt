@@ -51,6 +51,8 @@ fun DashboardUI() {
     var direction by remember { mutableStateOf(Direction.NONE) }
     val coroutineScope = rememberCoroutineScope()
     var isAnimating by remember { mutableStateOf(false) }
+    var rightClickedCount by remember { mutableIntStateOf(0) }
+    var pageSelector by remember { mutableStateOf(false) }
     val navMenuItems = 3
 
     LaunchedEffect(Unit) {
@@ -96,6 +98,7 @@ fun DashboardUI() {
                         }
 
                         KeyEvent.KEYCODE_DPAD_LEFT -> {
+                            rightClickedCount--
                             if (navMenuVisible) {
                                 navMenuVisible = false
                                 showSelectedPage = false
@@ -111,6 +114,7 @@ fun DashboardUI() {
                                 selectedNavIndex = 0 // Highlight first navigation icon
                             } else if (navMenuVisible) {
                                 showSelectedPage = true // Open the selected page
+                                pageSelector = true
                             }
                             true
                         }
@@ -161,7 +165,7 @@ fun DashboardUI() {
     }
 
     if (navMenuVisible) {
-        NavPager(pagerState)
+        NavPager(pagerState, pageSelector)
     }
 }
 

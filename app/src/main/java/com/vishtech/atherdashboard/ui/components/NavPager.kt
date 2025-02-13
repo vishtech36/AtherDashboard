@@ -9,11 +9,8 @@ import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerSnapDistance
@@ -21,7 +18,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +29,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NavPager(pagerState: PagerState) {
+fun NavPager(pagerState: PagerState, pageSelector: Boolean = false) {
     val flingBehavior = PagerDefaults.flingBehavior(
         state = pagerState,
         pagerSnapDistance = PagerSnapDistance.atMost(1),
@@ -83,7 +79,7 @@ fun NavPager(pagerState: PagerState) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 when(page) {
-                    0 -> SavedRoutesCard()
+                    0 -> SavedRoutesCard(pageSelector)
                     1 -> BluetoothPairingCard()
                     else -> ControlsCard()
                 }
