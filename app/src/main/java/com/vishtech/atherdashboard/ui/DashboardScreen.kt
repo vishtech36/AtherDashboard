@@ -2,6 +2,13 @@ package com.vishtech.atherdashboard.ui
 
 import android.util.Log
 import android.view.KeyEvent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -164,9 +171,18 @@ fun DashboardUI() {
         RangeEcoInfo()
     }
 
-    if (navMenuVisible) {
-        NavPager(pagerState, pageSelector, pageUpdater)
-    }
+        AnimatedVisibility(
+            visible = navMenuVisible,
+            enter = slideInVertically(
+                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
+            ) { it } + fadeIn(animationSpec = tween(800)),
+            exit = slideOutVertically(
+                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
+            ) { it } + fadeOut(animationSpec = tween(800))
+            ) {
+            NavPager(pagerState, pageSelector, pageUpdater)
+        }
+
     LaunchedEffect(pagerState.currentPage) {
         if(navMenuVisible)
             selectedNavIndex = pagerState.currentPage
