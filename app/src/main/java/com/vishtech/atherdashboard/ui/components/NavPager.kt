@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NavPager(pagerState: PagerState, pageSelector: Boolean = false) {
+fun NavPager(pagerState: PagerState, pageSelector: Int = 0) {
     val flingBehavior = PagerDefaults.flingBehavior(
         state = pagerState,
         pagerSnapDistance = PagerSnapDistance.atMost(1),
@@ -47,7 +47,9 @@ fun NavPager(pagerState: PagerState, pageSelector: Boolean = false) {
     Column {
         VerticalPager(
             state = pagerState,
-            modifier = Modifier.weight(1f).padding(top = 32.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 32.dp),
             pageSize = object : PageSize {
                 override fun Density.calculateMainAxisPageSize(
                     availableSpace: Int,
@@ -78,10 +80,10 @@ fun NavPager(pagerState: PagerState, pageSelector: Boolean = false) {
                     ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                when(page) {
-                    0 -> SavedRoutesCard(pageSelector)
-                    1 -> BluetoothPairingCard()
-                    else -> ControlsCard()
+                when (page) {
+                    0 -> SavedRoutesCard(pageSelector == 0, pagerState)
+                    1 -> BluetoothPairingCard(pageSelector == 1, pagerState)
+                    else -> ControlsCard(pageSelector == 2, pagerState)
                 }
             }
         }

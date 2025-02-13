@@ -52,7 +52,7 @@ fun DashboardUI() {
     val coroutineScope = rememberCoroutineScope()
     var isAnimating by remember { mutableStateOf(false) }
     var rightClickedCount by remember { mutableIntStateOf(0) }
-    var pageSelector by remember { mutableStateOf(false) }
+    var pageSelector by remember { mutableIntStateOf(-1) }
     val navMenuItems = 3
 
     LaunchedEffect(Unit) {
@@ -114,7 +114,7 @@ fun DashboardUI() {
                                 selectedNavIndex = 0 // Highlight first navigation icon
                             } else if (navMenuVisible) {
                                 showSelectedPage = true // Open the selected page
-                                pageSelector = true
+                                pageSelector = selectedNavIndex
                             }
                             true
                         }
@@ -152,7 +152,7 @@ fun DashboardUI() {
         }
 
         // **Speedometer (Center)**
-            Speedometer()
+        Speedometer()
 
         // Battery
         Battery()
@@ -166,6 +166,9 @@ fun DashboardUI() {
 
     if (navMenuVisible) {
         NavPager(pagerState, pageSelector)
+    }
+    LaunchedEffect(pagerState.currentPage) {
+        Log.d("VB", "DashboardUI: currentPage ${pagerState.currentPage}")
     }
 }
 

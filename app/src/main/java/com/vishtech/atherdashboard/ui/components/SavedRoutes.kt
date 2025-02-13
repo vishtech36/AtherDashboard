@@ -1,3 +1,4 @@
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -32,8 +34,9 @@ import androidx.compose.ui.unit.sp
 import com.vishtech.atherdashboard.ui.theme.cardBackgroundColor
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SavedRoutesCard(shouldFocus: Boolean) {
+fun SavedRoutesCard(shouldFocus: Boolean, pagerState: PagerState) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
@@ -57,17 +60,22 @@ fun SavedRoutesCard(shouldFocus: Boolean) {
         Spacer(modifier = Modifier.height(12.dp))
 
         SectionTitle("⭐ Favourites")
-        FocusableRow(items = listOf("House", "Hostel", "Office"), firstItemFocusRequester, shouldFocus)
+        FocusableRow(
+            items = listOf("House", "Hostel", "Office"),
+            firstItemFocusRequester,
+            shouldFocus,
+            pagerState
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         SectionTitle("🕒 Frequents")
-        FocusableRow(items = listOf("Ashirvad Supermarket", "GoNative"), null, false)
+        FocusableRow(items = listOf("Ashirvad Supermarket", "GoNative"), null, false, pagerState)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         SectionTitle("⚡ Chargers")
-        FocusableRow(items = listOf("Mantri Skyvilla", "Athena"), null, false)
+        FocusableRow(items = listOf("Mantri Skyvilla", "Athena"), null, false, pagerState)
     }
 
     // If shouldFocus is true, request focus on the first item
@@ -89,8 +97,14 @@ fun SectionTitle(title: String) {
     Spacer(modifier = Modifier.height(8.dp))
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FocusableRow(items: List<String>, firstItemFocusRequester: FocusRequester?, shouldFocus: Boolean) {
+fun FocusableRow(
+    items: List<String>,
+    firstItemFocusRequester: FocusRequester?,
+    shouldFocus: Boolean,
+    pagerState: PagerState
+) {
     val focusRequesterList = remember { items.map { FocusRequester() } }
     val focusManager = LocalFocusManager.current
 
@@ -100,6 +114,13 @@ fun FocusableRow(items: List<String>, firstItemFocusRequester: FocusRequester?, 
         items.forEachIndexed { index, item ->
             var isFocused by remember { mutableStateOf(false) }
 
+
+            LaunchedEffect(isFocused) {
+                if (isFocused) {
+                    pagerState.animateScrollToPage(0)
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .padding(end = 8.dp)
@@ -108,7 +129,10 @@ fun FocusableRow(items: List<String>, firstItemFocusRequester: FocusRequester?, 
                         shape = RoundedCornerShape(20.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .focusRequester(if (index == 0) firstItemFocusRequester ?: focusRequesterList[index] else focusRequesterList[index])
+                    .focusRequester(
+                        if (index == 0) firstItemFocusRequester
+                            ?: focusRequesterList[index] else focusRequesterList[index]
+                    )
                     .onFocusChanged { isFocused = it.isFocused }
                     .focusable()
             ) {
@@ -127,11 +151,11 @@ fun FocusableRow(items: List<String>, firstItemFocusRequester: FocusRequester?, 
 fun PreviewSavedRoutesCard() {
     Column {
         Text("Without Focus")
-        SavedRoutesCard(shouldFocus = false) // Nothing is selected
+        // SavedRoutesCard(shouldFocus = false, pagerState = ) // Nothing is selected
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Text("With Focus")
-        SavedRoutesCard(shouldFocus = true) // First item of first row is selected
+        // SavedRoutesCard(shouldFocus = true) // First item of first row is selected
     }
 }
