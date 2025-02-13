@@ -1,5 +1,6 @@
 package com.vishtech.atherdashboard.ui.components
 
+import SavedRoutesCard
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -50,13 +51,13 @@ fun NavPager(pagerState: PagerState) {
     Column {
         VerticalPager(
             state = pagerState,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).padding(top = 32.dp),
             pageSize = object : PageSize {
                 override fun Density.calculateMainAxisPageSize(
                     availableSpace: Int,
                     pageSpacing: Int
                 ): Int {
-                    return ((availableSpace - 2 * pageSpacing) * 0.7f).toInt() // Reduced size for adjacent items to be visible
+                    return ((availableSpace - 2 * pageSpacing) * .95f).toInt() // Reduced size for adjacent items to be visible
                 }
             },
             beyondBoundsPageCount = 3,
@@ -81,21 +82,10 @@ fun NavPager(pagerState: PagerState) {
                     ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                if(page == 1) {
-                    BluetoothPairingCard()
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .width(200.dp)
-                            .fillMaxHeight()
-                            .padding(0.dp)
-                    ) {
-                        Text(
-                            text = "Page: $page",
-                            modifier = Modifier
-                                .background(if (page % 2 == 0) Color.Gray else Color.Green)
-                        )
-                    }
+                when(page) {
+                    0 -> SavedRoutesCard()
+                    1 -> BluetoothPairingCard()
+                    else -> ControlsCard()
                 }
             }
         }

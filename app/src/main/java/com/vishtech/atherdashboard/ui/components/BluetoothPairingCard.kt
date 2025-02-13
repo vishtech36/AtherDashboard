@@ -2,6 +2,7 @@ package com.vishtech.atherdashboard.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,12 +29,16 @@ import com.vishtech.atherdashboard.ui.theme.cardBackgroundColor
 
 @Composable
 fun BluetoothPairingCard() {
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
     Column(
         modifier = Modifier
-            .width(200.dp)
+            .width(250.dp)
+            .height(screenHeight)
             .background(cardBackgroundColor, shape = RoundedCornerShape(12.dp)) // Dark background
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = "Bluetooth",
