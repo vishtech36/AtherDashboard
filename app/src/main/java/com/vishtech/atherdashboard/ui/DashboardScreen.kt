@@ -169,6 +169,8 @@ fun DashboardUI() {
     }
     LaunchedEffect(pagerState.currentPage) {
         Log.d("VB", "DashboardUI: currentPage ${pagerState.currentPage}")
+        if(navMenuVisible)
+            selectedNavIndex = pagerState.currentPage
     }
 }
 
