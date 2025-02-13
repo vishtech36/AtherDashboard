@@ -51,9 +51,9 @@ fun DashboardUI() {
     var direction by remember { mutableStateOf(Direction.NONE) }
     val coroutineScope = rememberCoroutineScope()
     var isAnimating by remember { mutableStateOf(false) }
-    var rightClickedCount by remember { mutableIntStateOf(0) }
     var pageSelector by remember { mutableIntStateOf(-1) }
     val navMenuItems = 3
+    var pageUpdater by remember { mutableStateOf(-1) }
 
     LaunchedEffect(Unit) {
         focusRequesters[selectedIndex].requestFocus()
@@ -98,10 +98,10 @@ fun DashboardUI() {
                         }
 
                         KeyEvent.KEYCODE_DPAD_LEFT -> {
-                            rightClickedCount--
                             if (navMenuVisible) {
                                 navMenuVisible = false
                                 showSelectedPage = false
+                                pageSelector = -1
                                 selectedNavIndex = -1
                             }
                             true
@@ -115,6 +115,7 @@ fun DashboardUI() {
                             } else if (navMenuVisible) {
                                 showSelectedPage = true // Open the selected page
                                 pageSelector = selectedNavIndex
+                                pageUpdater++
                             }
                             true
                         }
@@ -165,7 +166,7 @@ fun DashboardUI() {
     }
 
     if (navMenuVisible) {
-        NavPager(pagerState, pageSelector)
+        NavPager(pagerState, pageSelector, pageUpdater)
     }
     LaunchedEffect(pagerState.currentPage) {
         Log.d("VB", "DashboardUI: currentPage ${pagerState.currentPage}")

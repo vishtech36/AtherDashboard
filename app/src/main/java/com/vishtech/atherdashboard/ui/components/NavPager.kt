@@ -1,6 +1,7 @@
 package com.vishtech.atherdashboard.ui.components
 
 import SavedRoutesCard
+import android.util.Log
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -18,6 +19,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +31,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NavPager(pagerState: PagerState, pageSelector: Int = 0) {
+fun NavPager(pagerState: PagerState, pageSelector: Int = -1, pageUpdater: Int = -1) {
     val flingBehavior = PagerDefaults.flingBehavior(
         state = pagerState,
         pagerSnapDistance = PagerSnapDistance.atMost(1),
@@ -62,6 +64,7 @@ fun NavPager(pagerState: PagerState, pageSelector: Int = 0) {
             flingBehavior = flingBehavior,
             horizontalAlignment = Alignment.CenterHorizontally
         ) { page ->
+            Log.d("VB", "PageUpdater: $pageUpdater")
             val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
             val scale = animateFloatAsState(
                 targetValue = 1f - (0.4f * kotlin.math.abs(pageOffset)), // Scale effect
@@ -85,6 +88,7 @@ fun NavPager(pagerState: PagerState, pageSelector: Int = 0) {
                     1 -> BluetoothPairingCard(pageSelector == 1, pagerState)
                     else -> ControlsCard(pageSelector == 2, pagerState)
                 }
+                Button(onClick = {pageUpdater}) { }
             }
         }
     }
