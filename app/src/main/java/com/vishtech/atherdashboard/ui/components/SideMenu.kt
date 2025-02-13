@@ -71,7 +71,6 @@ fun SideMenu(
                     ) {
                         // **Selection Line**
                         if (selectedIndex == index) {
-                            Log.d("AA", "Selected Index: $selectedIndex");
                             Box(
                                 modifier = Modifier
                                     .width(6.dp)

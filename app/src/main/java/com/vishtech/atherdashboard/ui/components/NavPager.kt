@@ -64,7 +64,6 @@ fun NavPager(pagerState: PagerState, pageSelector: Int = -1, pageUpdater: Int = 
             flingBehavior = flingBehavior,
             horizontalAlignment = Alignment.CenterHorizontally
         ) { page ->
-            Log.d("VB", "PageUpdater: $pageUpdater")
             val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
             val scale = animateFloatAsState(
                 targetValue = 1f - (0.4f * kotlin.math.abs(pageOffset)), // Scale effect

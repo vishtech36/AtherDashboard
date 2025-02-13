@@ -58,7 +58,6 @@ fun DashboardUI() {
     LaunchedEffect(Unit) {
         focusRequesters[selectedIndex].requestFocus()
     }
-    Log.d("TAG", "DashboardUI: -> $selectedNavIndex")
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -169,7 +168,6 @@ fun DashboardUI() {
         NavPager(pagerState, pageSelector, pageUpdater)
     }
     LaunchedEffect(pagerState.currentPage) {
-        Log.d("VB", "DashboardUI: currentPage ${pagerState.currentPage}")
         if(navMenuVisible)
             selectedNavIndex = pagerState.currentPage
     }
