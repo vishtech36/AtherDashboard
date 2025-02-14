@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AtherDashboard"
         tools:targetApi="31" >
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyC-EDIdalkJ4gqJqpTW2im-N1RhCRmpQ60" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

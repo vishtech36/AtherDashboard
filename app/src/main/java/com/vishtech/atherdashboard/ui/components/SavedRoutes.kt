@@ -31,12 +31,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.model.LatLng
+import com.vishtech.atherdashboard.locationMap
 import com.vishtech.atherdashboard.ui.theme.cardBackgroundColor
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SavedRoutesCard(shouldFocus: Boolean, pagerState: PagerState) {
+fun SavedRoutesCard(shouldFocus: Boolean, pagerState: PagerState, onLocationChanged: (LatLng) -> Unit) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
@@ -64,18 +66,19 @@ fun SavedRoutesCard(shouldFocus: Boolean, pagerState: PagerState) {
             items = listOf("House", "Hostel", "Office"),
             firstItemFocusRequester,
             shouldFocus,
-            pagerState
+            pagerState,
+            onLocationChanged
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         SectionTitle("🕒 Frequents")
-        FocusableRow(items = listOf("Ashirvad Supermarket", "GoNative"), null, false, pagerState)
+        FocusableRow(items = listOf("Ashirvad Supermarket", "GoNative"), null, false, pagerState, onLocationChanged)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         SectionTitle("⚡ Chargers")
-        FocusableRow(items = listOf("Mantri Skyvilla", "Athena"), null, false, pagerState)
+        FocusableRow(items = listOf("Mantri Skyvilla", "Athena"), null, false, pagerState, onLocationChanged)
     }
 
     // If shouldFocus is true, request focus on the first item
@@ -103,7 +106,8 @@ fun FocusableRow(
     items: List<String>,
     firstItemFocusRequester: FocusRequester?,
     shouldFocus: Boolean,
-    pagerState: PagerState
+    pagerState: PagerState,
+    onLocationChanged: (LatLng) -> Unit
 ) {
     val focusRequesterList = remember { items.map { FocusRequester() } }
     val focusManager = LocalFocusManager.current
@@ -118,6 +122,7 @@ fun FocusableRow(
             LaunchedEffect(isFocused) {
                 if (isFocused) {
                     pagerState.animateScrollToPage(0)
+                    onLocationChanged(locationMap[item]!!)
                 }
             }
 

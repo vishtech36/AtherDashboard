@@ -1,6 +1,5 @@
 package com.vishtech.atherdashboard.ui.components
 
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -34,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.model.LatLng
 import com.vishtech.atherdashboard.R
 import kotlinx.coroutines.launch
 
@@ -47,7 +47,7 @@ fun SideMenu(
     navMenuVisible: Boolean,
     focusRequesters: List<FocusRequester>,
     modifier: Modifier = Modifier,
-    onAnimationChanged: (Boolean) -> Unit
+    onAnimationChanged: (Boolean) -> Unit,
 ) {
     val arrow2Offset = remember { Animatable(0f) }
     val arrow3Offset = remember { Animatable(0f) }

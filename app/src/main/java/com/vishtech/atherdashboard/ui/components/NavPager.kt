@@ -1,7 +1,6 @@
 package com.vishtech.atherdashboard.ui.components
 
 import SavedRoutesCard
-import android.util.Log
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -28,10 +27,16 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.model.LatLng
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NavPager(pagerState: PagerState, pageSelector: Int = -1, pageUpdater: Int = -1) {
+fun NavPager(
+    pagerState: PagerState,
+    pageSelector: Int = -1,
+    pageUpdater: Int = -1,
+    onLocationChanged: (LatLng) -> Unit
+) {
     val flingBehavior = PagerDefaults.flingBehavior(
         state = pagerState,
         pagerSnapDistance = PagerSnapDistance.atMost(1),
@@ -83,11 +88,11 @@ fun NavPager(pagerState: PagerState, pageSelector: Int = -1, pageUpdater: Int = 
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 when (page) {
-                    0 -> SavedRoutesCard(pageSelector == 0, pagerState)
+                    0 -> SavedRoutesCard(pageSelector == 0, pagerState, onLocationChanged)
                     1 -> BluetoothPairingCard(pageSelector == 1, pagerState)
                     else -> ControlsCard(pageSelector == 2, pagerState)
                 }
-                Button(onClick = {pageUpdater}) { }
+                Button(onClick = { pageUpdater }) { }
             }
         }
     }
@@ -98,5 +103,5 @@ fun NavPager(pagerState: PagerState, pageSelector: Int = -1, pageUpdater: Int = 
 @Composable
 private fun PreviewNavPager() {
     val pagerState = rememberPagerState(pageCount = { 3 })
-    NavPager(pagerState)
+    // NavPager(pagerState, newLocation = newLocation)
 }
