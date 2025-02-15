@@ -21,10 +21,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -118,6 +122,7 @@ fun FocusableRow(
         items.forEachIndexed { index, item ->
             var isFocused by remember { mutableStateOf(false) }
 
+            val focusRequester = focusRequesterList[index] // Ensure each item has a requester
 
             LaunchedEffect(isFocused) {
                 if (isFocused) {
@@ -134,11 +139,21 @@ fun FocusableRow(
                         shape = RoundedCornerShape(20.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .focusRequester(
-                        if (index == 0) firstItemFocusRequester
-                            ?: focusRequesterList[index] else focusRequesterList[index]
-                    )
+                    .onKeyEvent { event ->
+                        if (index == 0) {
+                            if (event.key == Key.DirectionLeft) {
+                                println("Left key pressed, clearing focus")
+                                isFocused = false
+                                focusManager.clearFocus()
+                                return@onKeyEvent true
+                            }
+                        }
+                        false
+                    }
                     .onFocusChanged { isFocused = it.isFocused }
+                    .focusRequester(
+                        if (index == 0 && firstItemFocusRequester != null) firstItemFocusRequester else focusRequester
+                    ) // Apply firstItemFocusRequester only to the first item
                     .focusable()
             ) {
                 Text(
@@ -150,6 +165,7 @@ fun FocusableRow(
         }
     }
 }
+
 
 @Preview
 @Composable

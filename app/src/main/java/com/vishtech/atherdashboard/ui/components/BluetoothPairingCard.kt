@@ -29,6 +29,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.vishtech.atherdashboard.R
 import com.vishtech.atherdashboard.ui.theme.cardBackgroundColor
 import kotlinx.coroutines.delay
+import kotlin.coroutines.ContinuationInterceptor
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -88,7 +94,14 @@ fun BluetoothPairingCard(shouldFocus: Boolean, pagerState: PagerState) {
                 .focusRequester(focusRequester)
                 .onFocusChanged { focusState ->
                     isFocused = focusState.isFocused
+                }.onKeyEvent { event ->
+                if (event.key == Key.DirectionLeft) {
+                    println("Left key pressed, clearing focus")
+                    isFocused = false
+                    return@onKeyEvent true
                 }
+                false
+            }
                 .focusable(),
             contentAlignment = Alignment.Center
         ) {
@@ -102,7 +115,7 @@ fun BluetoothPairingCard(shouldFocus: Boolean, pagerState: PagerState) {
     }
 
     // Auto-focus "Request to Pair" button when shouldFocus is true
-    LaunchedEffect(shouldFocus) {
+   LaunchedEffect(shouldFocus) {
         if (shouldFocus) {
             delay(300) // Small delay ensures focus request works correctly
             focusRequester.requestFocus()
