@@ -14,7 +14,7 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 
 @Composable
-fun GoogleMapScreen(startLocation: LatLng = LatLng(18.6748101, 73.8573322), newLocation: LatLng? = null) {
+fun GoogleMapScreen(startLocation: LatLng = LatLng(18.6748101, 73.8573322), newLocation: LatLng? = null, onLocationUpdated: (Boolean) -> Unit) {
     var selectedLocation by remember { mutableStateOf(newLocation ?: startLocation) }
 
     val startMarkerState = rememberMarkerState(position = startLocation)
@@ -37,6 +37,7 @@ fun GoogleMapScreen(startLocation: LatLng = LatLng(18.6748101, 73.8573322), newL
                 .build()
             cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, 100))
         }
+        onLocationUpdated(true)
     }
 
     Box(
@@ -109,5 +110,7 @@ private fun PreviewGoogleMap() {
     GoogleMapScreen(
         startLocation = LatLng(18.6748101, 73.8573322),
         newLocation = LatLng(18.6758101, 73.8583322) // Example destination
-    )
+    ) {
+
+    }
 }

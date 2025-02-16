@@ -13,22 +13,30 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.vishtech.atherdashboard.locationMap
 import com.vishtech.atherdashboard.ui.components.Battery
 import com.vishtech.atherdashboard.ui.components.BatteryEcoInfo
 import com.vishtech.atherdashboard.ui.components.GoogleMapScreen
+import com.vishtech.atherdashboard.ui.components.HomePopupNotification
 import com.vishtech.atherdashboard.ui.components.NavPager
 import com.vishtech.atherdashboard.ui.components.RangeEcoInfo
 import com.vishtech.atherdashboard.ui.components.SideMenu
@@ -44,6 +52,7 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
     val focusRequesters = List(viewModel.allIcons.size) { FocusRequester() }
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
+    var showPopUp by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         focusRequesters[viewModel.selectedIndex.intValue].requestFocus()
@@ -151,6 +160,7 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
 
         // **Range & ECO Info (Right)**
         RangeEcoInfo()
+
     }
 
     AnimatedVisibility(
@@ -162,7 +172,9 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
             animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
         ) { fullWidth -> fullWidth } + fadeOut(animationSpec = tween(800)) // Moves out to left
     ) {
-        viewModel.newChangedLocation.value?.let { GoogleMapScreen(newLocation = it) }
+        viewModel.newChangedLocation.value?.let { GoogleMapScreen(newLocation = it) {
+            showPopUp = true
+        } }
     }
     LaunchedEffect(pagerState.currentPage) {
         if(viewModel.navMenuVisible.value) {
@@ -180,6 +192,12 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
     ) {
         NavPager(pagerState, viewModel.pageSelector.intValue, viewModel.pageUpdater.intValue) { newLocation ->
             viewModel.newChangedLocation.value = newLocation
+        }
+    }
+    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.Bottom) {
+        val key = locationMap.entries.find { it.value == viewModel.newChangedLocation.value }?.key
+        HomePopupNotification(key, showPopup = showPopUp) {
+            showPopUp =  false
         }
     }
 }
