@@ -1,14 +1,13 @@
-import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.vishtech.atherdashboard.R
-import com.vishtech.atherdashboard.data.Direction
 
 class DashboardViewModel : ViewModel() {
-    val topIcon = listOf(R.drawable.music)
+    private val topIcon = listOf(R.drawable.music)
     val middleIcons = listOf(R.drawable.location, R.drawable.bluetooth, R.drawable.subtract)
-    val bottomIcon = listOf(R.drawable.gauge)
+    private val bottomIcon = listOf(R.drawable.gauge)
     val allIcons = topIcon + listOf("group") + bottomIcon
 
     val selectedIndex = mutableIntStateOf(0)
@@ -19,6 +18,7 @@ class DashboardViewModel : ViewModel() {
     val pageSelector = mutableIntStateOf(-1)
     val pageUpdater = mutableIntStateOf(-1)
     val newChangedLocation = mutableStateOf<LatLng?>(null)
+    val currentSpeed = mutableIntStateOf(0)
 
     val navMenuItems = 3
 }

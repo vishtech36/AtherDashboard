@@ -19,17 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.maps.model.LatLng
 import com.vishtech.atherdashboard.ui.components.Battery
 import com.vishtech.atherdashboard.ui.components.BatteryEcoInfo
 import com.vishtech.atherdashboard.ui.components.GoogleMapScreen
@@ -48,9 +44,6 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
     val focusRequesters = List(viewModel.allIcons.size) { FocusRequester() }
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
-    val navMenuItems = 3
-    var pageUpdater by remember { mutableStateOf(-1) }
-    var newChangedLocation by remember { mutableStateOf<LatLng?>(null) }
 
     LaunchedEffect(Unit) {
         focusRequesters[viewModel.selectedIndex.intValue].requestFocus()
@@ -65,7 +58,7 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
                     when (event.nativeKeyEvent.keyCode) {
                         KeyEvent.KEYCODE_DPAD_DOWN -> {
                             if (viewModel.navMenuVisible.value) {
-                                if (viewModel.selectedNavIndex.intValue < navMenuItems - 1) {
+                                if (viewModel.selectedNavIndex.intValue < viewModel.navMenuItems - 1) {
                                     viewModel.selectedNavIndex.intValue++
                                 }
                             } else {
@@ -95,7 +88,7 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
                             if (viewModel.navMenuVisible.value) {
                                 viewModel.navMenuVisible.value = false
                                 viewModel.showSelectedPage.value = false
-                                viewModel.pageSelector.value = -1
+                                viewModel.pageSelector.intValue = -1
                                 viewModel.selectedNavIndex.intValue = -1
                             }
                             true
@@ -109,8 +102,8 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
                                     0 // Highlight first navigation icon
                             } else if (viewModel.navMenuVisible.value) {
                                 viewModel.showSelectedPage.value = true // Open the selected page
-                                viewModel.pageSelector.value = viewModel.selectedNavIndex.intValue
-                                pageUpdater++
+                                viewModel.pageSelector.intValue = viewModel.selectedNavIndex.intValue
+                                viewModel.pageUpdater.intValue++
                             }
                             true
                         }
@@ -148,7 +141,7 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
         }
 
         // **Speedometer (Center)**
-        Speedometer()
+        Speedometer(viewModel)
 
         // Battery
         Battery()
@@ -169,7 +162,7 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
             animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
         ) { fullWidth -> fullWidth } + fadeOut(animationSpec = tween(800)) // Moves out to left
     ) {
-        GoogleMapScreen(newChangedLocation)
+        GoogleMapScreen(viewModel.newChangedLocation.value)
     }
     LaunchedEffect(pagerState.currentPage) {
         if(viewModel.navMenuVisible.value) {
@@ -185,8 +178,8 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
             animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
         ) { it } + fadeOut(animationSpec = tween(800))
     ) {
-        NavPager(pagerState, viewModel.pageSelector.value, pageUpdater) { newLocation ->
-            newChangedLocation = newLocation
+        NavPager(pagerState, viewModel.pageSelector.intValue, viewModel.pageUpdater.intValue) { newLocation ->
+            viewModel.newChangedLocation.value = newLocation
         }
     }
 }

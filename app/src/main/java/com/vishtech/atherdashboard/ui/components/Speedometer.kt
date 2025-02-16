@@ -1,5 +1,6 @@
 package com.vishtech.atherdashboard.ui.components
 
+import DashboardViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Speedometer(modifier: Modifier = Modifier) {
+fun Speedometer(viewModel: DashboardViewModel, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -26,7 +27,7 @@ fun Speedometer(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "0",
+                text = viewModel.currentSpeed.intValue.toString(),
                 fontSize = 120.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
