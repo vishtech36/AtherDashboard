@@ -54,6 +54,8 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:2.11.4")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.maps.android:android-maps-utils:3.4.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3") // For network calls
+    implementation("com.squareup.moshi:moshi-kotlin:1.12.0") // For JSON parsing
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -162,7 +162,7 @@ fun DashboardUI(viewModel: DashboardViewModel = remember { DashboardViewModel() 
             animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
         ) { fullWidth -> fullWidth } + fadeOut(animationSpec = tween(800)) // Moves out to left
     ) {
-        GoogleMapScreen(viewModel.newChangedLocation.value)
+        viewModel.newChangedLocation.value?.let { GoogleMapScreen(newLocation = it) }
     }
     LaunchedEffect(pagerState.currentPage) {
         if(viewModel.navMenuVisible.value) {

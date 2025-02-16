@@ -10,26 +10,32 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
 
 @Composable
-fun GoogleMapScreen(newLocation: LatLng? = null) {
-    val defaultLocation = LatLng(18.6748101, 73.8573322)
-    var selectedLocation by remember { mutableStateOf(newLocation ?: defaultLocation) }
-    val markerState = rememberMarkerState(position = selectedLocation)
+fun GoogleMapScreen(startLocation: LatLng = LatLng(18.6748101, 73.8573322), newLocation: LatLng? = null) {
+    var selectedLocation by remember { mutableStateOf(newLocation ?: startLocation) }
+
+    val startMarkerState = rememberMarkerState(position = startLocation)
+    val endMarkerState = rememberMarkerState(position = selectedLocation)
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(selectedLocation, 15f)
+        position = CameraPosition.fromLatLngZoom(startLocation, 15f)
     }
 
-    // Move the camera and update marker when newLocation changes
+    // Generate curved path points
+    val curvePoints = generateCurvedPolyline(startLocation, selectedLocation, 0.2)
+
     LaunchedEffect(newLocation) {
         newLocation?.let {
             selectedLocation = it
-            markerState.position = it
-            cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(it, 15f))
+            endMarkerState.position = it
+            val bounds = LatLngBounds.builder()
+                .include(startLocation)
+                .include(it)
+                .build()
+            cameraPositionState.move(CameraUpdateFactory.newLatLngBounds(bounds, 100))
         }
     }
 
@@ -53,13 +59,45 @@ fun GoogleMapScreen(newLocation: LatLng? = null) {
                 cameraPositionState = cameraPositionState
             ) {
                 Marker(
-                    state = markerState,
+                    state = startMarkerState,
+                    title = "Start Location",
+                    snippet = "Lat: ${startLocation.latitude}, Lng: ${startLocation.longitude}",
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+                )
+
+                Marker(
+                    state = endMarkerState,
                     title = "Destination",
                     snippet = "Lat: ${selectedLocation.latitude}, Lng: ${selectedLocation.longitude}"
+                )
+
+                // Draw a curved polyline
+                Polyline(
+                    points = curvePoints,
+                    color = androidx.compose.ui.graphics.Color.Blue,
+                    width = 5f
                 )
             }
         }
     }
+}
+
+// Function to generate curved points
+fun generateCurvedPolyline(start: LatLng, end: LatLng, curvature: Double): List<LatLng> {
+    val midLat = (start.latitude + end.latitude) / 2
+    val midLng = (start.longitude + end.longitude) / 2
+    val curveHeight = curvature * 0.001  // Adjust this for more/less curve
+
+    val controlPoint = LatLng(midLat + curveHeight, midLng + curveHeight)
+
+    val points = mutableListOf<LatLng>()
+    for (t in 0..100) { // Increase for smoother curve
+        val u = t / 100.0
+        val lat = (1 - u) * (1 - u) * start.latitude + 2 * (1 - u) * u * controlPoint.latitude + u * u * end.latitude
+        val lng = (1 - u) * (1 - u) * start.longitude + 2 * (1 - u) * u * controlPoint.longitude + u * u * end.longitude
+        points.add(LatLng(lat, lng))
+    }
+    return points
 }
 
 @Preview(
@@ -68,5 +106,8 @@ fun GoogleMapScreen(newLocation: LatLng? = null) {
 )
 @Composable
 private fun PreviewGoogleMap() {
-    GoogleMapScreen(LatLng(18.5204, 73.8567)) // Example location
+    GoogleMapScreen(
+        startLocation = LatLng(18.6748101, 73.8573322),
+        newLocation = LatLng(18.6758101, 73.8583322) // Example destination
+    )
 }
